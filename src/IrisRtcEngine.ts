@@ -12,6 +12,7 @@
   EncryptionMode,
   IAgoraRTCClient,
   IAgoraRTCRemoteUser,
+  ILocalAudioTrack,
   ILocalTrack,
   ILocalVideoTrack,
   NetworkQuality,
@@ -90,6 +91,8 @@ export default class IrisRtcEngine {
   private _muteLocalVideo: boolean;
   private _defaultMuteAllRemoteAudioStreams: boolean;
   private _defaultMuteAllRemoteVideoStreams: boolean;
+  private _iLocalVideoTrack: ILocalVideoTrack | undefined;
+  private _iLocalAudioTrack: ILocalAudioTrack | undefined;
   private _encryptionMode?:
     | 'aes-128-xts'
     | 'aes-256-xts'
@@ -179,6 +182,8 @@ export default class IrisRtcEngine {
     [ApiTypeEngine.kEngineSetParameters]: this.setParameters,
     [ApiTypeEngine.kEngineSetAppType]: this.setAppType,
     [ApiTypeEngine.kEngineSetCloudProxy]: this.setCloudProxy,
+    [ApiTypeEngine.kEngineCustomPublish]: this.customPublish,
+    [ApiTypeEngine.kEngineCustomUnPublish]: this.customUnPublish,
   };
 
   constructor() {
@@ -718,18 +723,36 @@ export default class IrisRtcEngine {
       ?.join(this._context?.appId, channelId, token, uid)
       .then(async (id) => {
         try {
-          await this._publish(
-            await this.deviceManager.createMicrophoneAudioTrack(
+          /// 트랙을 생성함과 동시에 publish를 하고 있는 기존 로직을 수정
+          /// publish는 생성한 customPublish함수를 통해 flutter에서 관리하도록 함
+          // await this._publish(
+          //   await this.deviceManager.createMicrophoneAudioTrack(
+          //     this._enableAudio && this._enableLocalAudio,
+          //     this._emitEvent.bind(this)
+          //   )
+          // );
+          // await this._publish(
+          //   await this.deviceManager.createCameraVideoTrack(
+          //     this._enableVideo && this._enableLocalVideo,
+          //     this._emitEvent.bind(this)
+          //   )
+          // );
+          await this.deviceManager
+            .createMicrophoneAudioTrack(
               this._enableAudio && this._enableLocalAudio,
               this._emitEvent.bind(this)
             )
-          );
-          await this._publish(
-            await this.deviceManager.createCameraVideoTrack(
+            .then((track) => {
+              this._iLocalAudioTrack = track;
+            });
+          await this.deviceManager
+            .createCameraVideoTrack(
               this._enableVideo && this._enableLocalVideo,
               this._emitEvent.bind(this)
             )
-          );
+            .then((track) => {
+              this._iLocalVideoTrack = track;
+            });
         } finally {
           this._emitEvent('JoinChannelSuccess', {
             channel: channelId,
@@ -1618,5 +1641,23 @@ export default class IrisRtcEngine {
         break;
     }
     return this._client?.startProxyServer(mode);
+  }
+
+  public async customPublish(params: { role: string }): Promise<void> {
+    if (this._iLocalAudioTrack && this._iLocalVideoTrack) {
+      return this._client?.publish([
+        this._iLocalAudioTrack,
+        this._iLocalVideoTrack!,
+      ]);
+    }
+  }
+
+  public async customUnPublish(params: { role: string }): Promise<void> {
+    if (this._iLocalAudioTrack && this._iLocalVideoTrack) {
+      return this._client?.unpublish([
+        this._iLocalAudioTrack,
+        this._iLocalVideoTrack!,
+      ]);
+    }
   }
 }

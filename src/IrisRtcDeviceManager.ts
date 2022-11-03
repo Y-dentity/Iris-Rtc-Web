@@ -6,6 +6,7 @@ import {
   ICameraVideoTrack,
   ILocalAudioTrack,
   ILocalVideoTrack,
+  IMicrophoneAudioTrack,
   IRemoteAudioTrack,
   IRemoteVideoTrack,
   MicrophoneAudioTrackInitConfig,
@@ -100,8 +101,10 @@ class IrisLocalTrackManager extends IrisVideoTrackManager {
    * @protected
    */
   protected screenConfig?: ScreenVideoTrackInitConfig;
-  protected localAudioTrack?: ILocalAudioTrack;
-  protected localVideoTrack?: ILocalVideoTrack;
+  // protected localAudioTrack?: ILocalAudioTrack;
+  // protected localVideoTrack?: ILocalVideoTrack;
+  protected localAudioTrack?: IMicrophoneAudioTrack;
+  protected localVideoTrack?: ICameraVideoTrack;
 
   /**
    * Create a microphone audio track
@@ -130,11 +133,33 @@ class IrisLocalTrackManager extends IrisVideoTrackManager {
       this.microphoneConfig
     );
     this.localAudioTrack?.on('track-ended', () => {
+      // const oldMicrophones = await AgoraRTC.getMicrophones();
+      // oldMicrophones[0] &&
+      //   this.localAudioTrack?.setDevice(oldMicrophones[0].deviceId);
+      AgoraRTC.getMicrophones().then((oldMicrophones) => {
+        oldMicrophones[0] &&
+          this.localAudioTrack?.setDevice(oldMicrophones[0].deviceId);
+      });
+
       callback('LocalAudioStateChanged', {
         state: LOCAL_AUDIO_STREAM_STATE.LOCAL_AUDIO_STREAM_STATE_FAILED,
         error: LOCAL_AUDIO_STREAM_ERROR.LOCAL_AUDIO_STREAM_ERROR_RECORD_FAILURE,
       });
     });
+
+    AgoraRTC.onMicrophoneChanged = async (changedDevice) => {
+      // When plugging in a device, switch to a device that is newly plugged in.
+      if (changedDevice.state === 'ACTIVE') {
+        // Switch to an existing device when the current device is unplugged.
+        this.localAudioTrack?.setDevice(changedDevice.device.deviceId);
+      } else if (
+        changedDevice.device.label === this.localAudioTrack?.getTrackLabel()
+      ) {
+        const oldMicrophones = await AgoraRTC.getMicrophones();
+        oldMicrophones[0] &&
+          this.localAudioTrack?.setDevice(oldMicrophones[0].deviceId);
+      }
+    };
     return this.localAudioTrack;
   }
 
@@ -594,6 +619,8 @@ export default class IrisRtcDeviceManager extends IrisRemoteTrackManager {
   private async setVideoDeviceId(params: { deviceId: string }) {
     if (this.cameraConfig !== params.deviceId) {
       this.cameraConfig.cameraId = params.deviceId;
+      const oldCameras = await AgoraRTC.getCameras();
+        oldCameras[0] && this.localVideoTrack?.setDevice(params.deviceId);
       if (this.localAudioTrack) {
         this.localAudioTrack.getTrackLabel();
       }

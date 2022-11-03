@@ -168,6 +168,9 @@ export enum ApiTypeEngine {
   kMediaPullAudioFrame,
   kMediaSetExternalVideoSource,
   kMediaPushVideoFrame,
+
+  kEngineCustomPublish,
+  kEngineCustomUnPublish,
 }
 
 export enum ApiTypeChannel {

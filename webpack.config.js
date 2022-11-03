@@ -17,7 +17,7 @@ module.exports = {
     extensions: ['.tsx', '.ts', '.js'],
   },
   output: {
-    filename: '[name].bundle.js',
+    filename: '[name].bundle.custom.js',
     library: 'IrisRtcEngine',
     libraryTarget: 'var',
     libraryExport: 'default',
