@@ -725,18 +725,6 @@ export default class IrisRtcEngine {
         try {
           /// 트랙을 생성함과 동시에 publish를 하고 있는 기존 로직을 수정
           /// publish는 생성한 customPublish함수를 통해 flutter에서 관리하도록 함
-          // await this._publish(
-          //   await this.deviceManager.createMicrophoneAudioTrack(
-          //     this._enableAudio && this._enableLocalAudio,
-          //     this._emitEvent.bind(this)
-          //   )
-          // );
-          // await this._publish(
-          //   await this.deviceManager.createCameraVideoTrack(
-          //     this._enableVideo && this._enableLocalVideo,
-          //     this._emitEvent.bind(this)
-          //   )
-          // );
           await this.deviceManager
             .createMicrophoneAudioTrack(
               this._enableAudio && this._enableLocalAudio,
