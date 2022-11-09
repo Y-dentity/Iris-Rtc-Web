@@ -513,6 +513,13 @@ export default class IrisRtcEngine {
             msg: '',
           });
         }
+
+        if (
+          event.msg == 'AUDIO_INPUT_LEVEL_TOO_LOW' ||
+          event.msg == 'AUDIO_INPUT_LEVEL_TOO_LOW_RECOVER'
+        ) {
+          this.deviceManager.recoverAudioDevice();
+        }
       }
     );
     this._client.on('is-using-cloud-proxy', (isUsingProxy: boolean) => {

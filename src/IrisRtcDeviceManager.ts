@@ -133,9 +133,6 @@ class IrisLocalTrackManager extends IrisVideoTrackManager {
       this.microphoneConfig
     );
     this.localAudioTrack?.on('track-ended', () => {
-      // const oldMicrophones = await AgoraRTC.getMicrophones();
-      // oldMicrophones[0] &&
-      //   this.localAudioTrack?.setDevice(oldMicrophones[0].deviceId);
       AgoraRTC.getMicrophones().then((oldMicrophones) => {
         oldMicrophones[0] &&
           this.localAudioTrack?.setDevice(oldMicrophones[0].deviceId);
@@ -161,6 +158,12 @@ class IrisLocalTrackManager extends IrisVideoTrackManager {
       }
     };
     return this.localAudioTrack;
+  }
+
+  public async recoverAudioDevice() {
+    const oldMicrophones = await AgoraRTC.getMicrophones();
+    oldMicrophones[0] &&
+      this.localAudioTrack?.setDevice(oldMicrophones[0].deviceId);
   }
 
   /**
