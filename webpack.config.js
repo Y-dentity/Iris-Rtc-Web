@@ -7,6 +7,15 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /\.(wasm)|(bin)|(obj)$/i,
+        include: [path.resolve(__dirname, 'node_modules/deepar/')],
+        type: 'asset/resource',
+      },
+      {
+        include: [path.resolve(__dirname, 'effects/')],
+        type: 'asset/resource',
+      },
+      {
         test: /\.tsx?$/,
         use: 'ts-loader',
         exclude: /node_modules/,
@@ -14,7 +23,7 @@ module.exports = {
     ],
   },
   resolve: {
-    extensions: ['.tsx', '.ts', '.js'],
+    extensions: ['.tsx', '.ts', '.js', '.wasm', '.bin', '.obj'],
   },
   output: {
     filename: '[name].bundle.custom.js',
