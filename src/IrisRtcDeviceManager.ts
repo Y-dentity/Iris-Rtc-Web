@@ -29,6 +29,11 @@ import {
 } from './types.native';
 import { printf } from './utils';
 
+const VideoExtension = require('deepar-agora-extension');
+const deeparWasm = require('deepar/wasm/deepar.wasm');
+const faceModel = require('deepar/models/face/models-68-extreme.bin');
+const segmentationModel = require('deepar/models/segmentation/segmentation-160x160-opt.bin');
+
 const AgoraRTC = require('agora-rtc-sdk-ng');
 
 /**
@@ -105,6 +110,8 @@ class IrisLocalTrackManager extends IrisVideoTrackManager {
   // protected localVideoTrack?: ILocalVideoTrack;
   protected localAudioTrack?: IMicrophoneAudioTrack;
   protected localVideoTrack?: ICameraVideoTrack;
+
+  protected deepAR: any;
 
   /**
    * Create a microphone audio track
@@ -200,8 +207,41 @@ class IrisLocalTrackManager extends IrisVideoTrackManager {
           LOCAL_VIDEO_STREAM_ERROR.LOCAL_VIDEO_STREAM_ERROR_CAPTURE_FAILURE,
       });
     });
+
+    const videoExtension = new VideoExtension.VideoExtension({
+      // licenseKey: '0154490e26ed3e2b40e6b1b19944f5d93a032ed1f9a1f927a39508b2438634b9b043b9018c91dedc', // localhost of orangeday
+      // licenseKey: '422186e85bbb6f4ffebc3f2ce843b7512accf020c35766a734ea0af397d45a963ef23a208ab9362e', // test.jjaann.co.kr
+      licenseKey: 'da8d4a47ef8a9c7be1e9783b9b084328bb8b09afeaf3ffe2b3786729813952d432fe260dba0e60ee', // app.test.jjaann.co.kr
+      deeparWasmPath: deeparWasm,
+      segmentationConfig: {
+        // don't need to define this if you don't use background removal effects
+        modelPath: segmentationModel,
+      },
+    });
+    //register extension
+    AgoraRTC.registerExtensions([videoExtension]);
+
+    //create DeepAR extension processor
+    const processor = await videoExtension.createProcessor();
+    
+    //piping processor
+    this.localVideoTrack?.pipe(processor).pipe(this.localVideoTrack?.processorDestination);
+
     this.playLocalVideo();
+
+    this.deepAR = processor.deepAR;
+    
+    await this.deepAR.downloadFaceTrackingModel(faceModel);
+    // await this.deepAR.switchEffect(0, 'slot', './Vendetta_Mask.deepar');
+    setTimeout(() => {this.testFunc()}, 4000);
     return this.localVideoTrack;
+  }
+
+  public testFunc() {
+    // this.deepAR.switchEffect(0, 'slot', './Vendetta_Mask.deepar');
+    // this.deepAR.switchEffect(0, 'slot', './Emotion_Meter.deepar');
+    // this.deepAR.switchEffect(0, 'slot', './Split_View_Look.deepar');
+    this.deepAR.switchEffect(0, 'slot', './assets/assets/deepar/Split_View_Look.deepar');
   }
 
   /**
