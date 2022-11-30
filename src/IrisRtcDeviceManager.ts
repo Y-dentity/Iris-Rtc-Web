@@ -4,6 +4,7 @@ import {
   BeautyEffectOptions,
   CameraVideoTrackInitConfig,
   ICameraVideoTrack,
+  ILocalTrack,
   ILocalAudioTrack,
   ILocalVideoTrack,
   IMicrophoneAudioTrack,
@@ -216,7 +217,8 @@ class IrisLocalTrackManager extends IrisVideoTrackManager {
     callback: Function,
     captureParams?: ScreenCaptureParameters,
     force: boolean = false
-  ): Promise<ILocalVideoTrack | undefined> {
+  // ): Promise<ILocalVideoTrack | undefined> {
+  ): Promise<ILocalTrack | undefined> {
     if (!enableVideo) {
       printf('createScreenVideoTrack', enableVideo);
       return;
@@ -266,7 +268,10 @@ class IrisLocalTrackManager extends IrisVideoTrackManager {
       });
     });
     this.playLocalVideo();
-    return this.localVideoTrack;
+
+    /// Intended to share not only the video track but also the audio track.
+    // return this.localVideoTrack;
+    return track;
   }
 
   public async enableLocalAudio(enabled: boolean) {
@@ -324,7 +329,7 @@ class IrisLocalTrackManager extends IrisVideoTrackManager {
     }
   }
 
-  public stopScreenCapture() {
+  public async stopScreenCapture() {
     if (this.screenConfig !== undefined) {
       this.localVideoTrack?.close();
       this.localVideoTrack = undefined;

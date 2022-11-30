@@ -91,6 +91,7 @@ export default class IrisRtcEngine {
   private _muteLocalVideo: boolean;
   private _defaultMuteAllRemoteAudioStreams: boolean;
   private _defaultMuteAllRemoteVideoStreams: boolean;
+  private _iLocalScreenCaptureTrack: ILocalTrack | undefined;
   private _iLocalVideoTrack: ILocalVideoTrack | undefined;
   private _iLocalAudioTrack: ILocalAudioTrack | undefined;
   private _encryptionMode?:
@@ -1269,6 +1270,9 @@ export default class IrisRtcEngine {
     regionRect?: Rectangle;
     captureParams?: ScreenCaptureParameters;
   }): Promise<void> {
+    /// Unpublish existing local video/audio tracks
+    await this.customUnPublish({ role: '' });
+
     return this.deviceManager
       .createScreenVideoTrack(
         this._enableVideo && this._enableLocalVideo,
@@ -1278,6 +1282,9 @@ export default class IrisRtcEngine {
       )
       .then((track) => {
         if (this._muteLocalVideo) return;
+        /// Save created screen capture track reference
+        /// for unpublishing later
+        this._iLocalScreenCaptureTrack = track;
         this._publish(track);
       });
   }
@@ -1319,7 +1326,51 @@ export default class IrisRtcEngine {
   }
 
   private async stopScreenCapture(_?: {}): Promise<void> {
-    return this.deviceManager.stopScreenCapture();
+    await this.deviceManager.stopScreenCapture();
+    await this.customStopLocalScreenCaptureTrack();
+    await this.customRestoreLocalTrackAndPublish();
+  }
+
+  private async customStopLocalScreenCaptureTrack(): Promise<void> {
+    try {
+      if (this._iLocalScreenCaptureTrack) {
+        this._client?.unpublish(this._iLocalScreenCaptureTrack);
+        if (typeof this._iLocalScreenCaptureTrack.close === 'function') {
+          /// called when tab is sharing without audio
+          this._iLocalScreenCaptureTrack.close();
+        } else {
+          /// called when tab is sharing with audio
+          /// TODO: later we should handle this case
+          console.log('DELDEL iris customStopLocalScreenCaptureTrack else');
+        }
+      }
+    } catch (e) {
+      console.log('DELDEL iris customStopLocalScreenCaptureTrack error', e);
+    }
+  }
+
+  private async customRestoreLocalTrackAndPublish(): Promise<void> {
+    // 추후 사용 가능성을 대비해 주석처리 함
+    // await this.deviceManager
+    //   .createMicrophoneAudioTrack(
+    //     this._enableAudio && this._enableLocalAudio,
+    //     this._emitEvent.bind(this),
+    //     true
+    //   )
+    //   .then((track) => {
+    //     this._iLocalAudioTrack = track;
+    //   });
+    
+    await this.deviceManager
+      .createCameraVideoTrack(
+        this._enableVideo && this._enableLocalVideo,
+        this._emitEvent.bind(this)
+        // true
+      )
+      .then((track) => {
+        this._iLocalVideoTrack = track;
+      });
+    await this.customPublish({ role: '' });
   }
 
   private async startScreenCapture(params: {
