@@ -896,6 +896,9 @@ export enum ERROR_CODE_TYPE {
   /** 1603: Video Device Module: An error occurs in setting the video encoder.
    */
   ERR_VCM_ENCODER_SET_ERROR = 1603,
+  /** Custom Error: An error occurs in canceling the screen capture.
+   */
+  CUSTOME_CANCELED_SCREEN_CAPTURE = 99991,
 }
 
 /** Output log filter level. */

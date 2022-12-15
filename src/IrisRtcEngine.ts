@@ -1272,7 +1272,6 @@ export default class IrisRtcEngine {
   }): Promise<void> {
     /// Unpublish existing local video/audio tracks
     await this.customUnPublish({ role: '' });
-
     return this.deviceManager
       .createScreenVideoTrack(
         this._enableVideo && this._enableLocalVideo,
@@ -1286,6 +1285,12 @@ export default class IrisRtcEngine {
         /// for unpublishing later
         this._iLocalScreenCaptureTrack = track;
         this._publish(track);
+      })
+      .catch(async (err) => {
+        this._emitEvent('Error', {
+          errorCode: ERROR_CODE_TYPE.CUSTOME_CANCELED_SCREEN_CAPTURE,
+        });
+        await this.customRestoreLocalTrackAndPublish();
       });
   }
 
@@ -1360,7 +1365,6 @@ export default class IrisRtcEngine {
     //   .then((track) => {
     //     this._iLocalAudioTrack = track;
     //   });
-    
     await this.deviceManager
       .createCameraVideoTrack(
         this._enableVideo && this._enableLocalVideo,
