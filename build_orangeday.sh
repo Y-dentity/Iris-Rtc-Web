@@ -11,7 +11,7 @@ echo '+------------------------------------------+'
 echo '| copying AgoraRtcWrapper.bundle.custom.js |'
 echo '+------------------------------------------+'
 echo ' '
-# for production release
-cp /Users/orangeday77/project/Iris-Rtc-Web/dist/*.* /Users/orangeday77/project/agora-flutter-sdk/assets/
+# for vscode local test
+cp /Users/orangeday77/project/Iris-Rtc-Web/dist/*.* /Users/orangeday77/project/jjaann_flutter/build/flutter_assets/packages/agora_rtc_engine/assets/
 
 date
