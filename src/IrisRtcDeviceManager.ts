@@ -130,6 +130,16 @@ class IrisLocalTrackManager extends IrisVideoTrackManager {
         return this.localAudioTrack;
       }
     }
+
+    // 악기 소리 송출 시 노이즈로 인식하는 문제가 있어 노이즈 제거 기능을 끔
+    // - AEC (Acoustic Echo Cancellation): A method of removing the echo from the audio signal captured by the microphone. After this feature is enabled, the SDK will filter the collected audio data to remove the echo.
+    // - AGC (Automatic Gain Control): After this function is turned on, the SDK can automatically adjust the Microphone Volume to adapt to near and far sound pickups and keep the Volume stable.
+    // - ANS (Active Noise Control): A set of audio technologies that actively cancel the ambient noise. Enabling this feature will make your voice clearer.
+    // 출처: https://docs.zegocloud.com/article/11863
+    this.microphoneConfig.AGC = false;
+    this.microphoneConfig.AEC = true;
+    this.microphoneConfig.ANS = false;
+
     this.localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack(
       this.microphoneConfig
     );
