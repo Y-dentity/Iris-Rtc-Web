@@ -18,7 +18,7 @@ import {
 } from './types.native';
 
 export function printf(tag: string, ...params: any[]) {
-  console.log('agora-iris', tag, ...params);
+  // console.log('agora-iris', tag, ...params);
 }
 
 export function ConnectionStateToNative(
