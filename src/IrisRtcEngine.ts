@@ -1341,12 +1341,12 @@ export default class IrisRtcEngine {
       if (this._iLocalScreenCaptureTrack) {
         this._client?.unpublish(this._iLocalScreenCaptureTrack);
         if (typeof this._iLocalScreenCaptureTrack.close === 'function') {
-          /// called when tab is sharing without audio
+          /// called when Chrome tab is sharing without audio or Widow or Full screen
           this._iLocalScreenCaptureTrack.close();
         } else {
-          /// called when tab is sharing with audio
-          /// TODO: later we should handle this case
-          console.log('DELDEL iris customStopLocalScreenCaptureTrack else');
+          /// called when Chrome tab is sharing with audio (and video)
+          this._iLocalScreenCaptureTrack[0].close();
+          this._iLocalScreenCaptureTrack[1].close();
         }
       }
     } catch (e) {
