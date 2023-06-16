@@ -1355,16 +1355,16 @@ export default class IrisRtcEngine {
   }
 
   private async customRestoreLocalTrackAndPublish(): Promise<void> {
-    // 추후 사용 가능성을 대비해 주석처리 함
-    // await this.deviceManager
-    //   .createMicrophoneAudioTrack(
-    //     this._enableAudio && this._enableLocalAudio,
-    //     this._emitEvent.bind(this),
-    //     true
-    //   )
-    //   .then((track) => {
-    //     this._iLocalAudioTrack = track;
-    //   });
+    /// 화면 공유의 오디오 공유(크롬 탭) 종료 후 호스트의 오디오 트랙을 재생성
+    await this.deviceManager
+      .createMicrophoneAudioTrack(
+        this._enableAudio && this._enableLocalAudio,
+        this._emitEvent.bind(this),
+        true
+      )
+      .then((track) => {
+        this._iLocalAudioTrack = track;
+      });
     await this.deviceManager
       .createCameraVideoTrack(
         this._enableVideo && this._enableLocalVideo,

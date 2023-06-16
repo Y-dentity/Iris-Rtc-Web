@@ -343,6 +343,8 @@ class IrisLocalTrackManager extends IrisVideoTrackManager {
     if (this.screenConfig !== undefined) {
       this.localVideoTrack?.close();
       this.localVideoTrack = undefined;
+      this.localAudioTrack?.close();
+      this.localAudioTrack = undefined;
       this.screenConfig = undefined;
     }
   }
