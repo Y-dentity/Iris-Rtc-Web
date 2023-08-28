@@ -535,6 +535,9 @@ export default class IrisRtcEngine {
 
   private _createClient() {
     if (this._client !== undefined) return;
+    console.log('DELDEL _createClient');
+    this._config.codec = 'vp8';
+    this._config.audioCodec = 'opus';
     this._client = AgoraRTC.createClient(this._config);
     this._addListener();
   }
@@ -1341,12 +1344,12 @@ export default class IrisRtcEngine {
       if (this._iLocalScreenCaptureTrack) {
         this._client?.unpublish(this._iLocalScreenCaptureTrack);
         if (typeof this._iLocalScreenCaptureTrack.close === 'function') {
-          /// called when tab is sharing without audio
+          /// called when Chrome tab is sharing without audio or Widow or Full screen
           this._iLocalScreenCaptureTrack.close();
         } else {
-          /// called when tab is sharing with audio
-          /// TODO: later we should handle this case
-          console.log('DELDEL iris customStopLocalScreenCaptureTrack else');
+          /// called when Chrome tab is sharing with audio (and video)
+          this._iLocalScreenCaptureTrack[0].close();
+          this._iLocalScreenCaptureTrack[1].close();
         }
       }
     } catch (e) {
@@ -1355,16 +1358,16 @@ export default class IrisRtcEngine {
   }
 
   private async customRestoreLocalTrackAndPublish(): Promise<void> {
-    // 추후 사용 가능성을 대비해 주석처리 함
-    // await this.deviceManager
-    //   .createMicrophoneAudioTrack(
-    //     this._enableAudio && this._enableLocalAudio,
-    //     this._emitEvent.bind(this),
-    //     true
-    //   )
-    //   .then((track) => {
-    //     this._iLocalAudioTrack = track;
-    //   });
+    /// 화면 공유의 오디오 공유(크롬 탭) 종료 후 호스트의 오디오 트랙을 재생성
+    await this.deviceManager
+      .createMicrophoneAudioTrack(
+        this._enableAudio && this._enableLocalAudio,
+        this._emitEvent.bind(this),
+        true
+      )
+      .then((track) => {
+        this._iLocalAudioTrack = track;
+      });
     await this.deviceManager
       .createCameraVideoTrack(
         this._enableVideo && this._enableLocalVideo,
