@@ -535,6 +535,9 @@ export default class IrisRtcEngine {
 
   private _createClient() {
     if (this._client !== undefined) return;
+    console.log('DELDEL _createClient');
+    this._config.codec = 'vp8';
+    this._config.audioCodec = 'opus';
     this._client = AgoraRTC.createClient(this._config);
     this._addListener();
   }
