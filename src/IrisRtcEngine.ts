@@ -187,6 +187,8 @@ export default class IrisRtcEngine {
     [ApiTypeEngine.kEngineCustomUnPublish]: this.customUnPublish,
   };
 
+  private SCREEN_UID: number = 10;
+
   constructor() {
     this._reset();
   }
@@ -535,7 +537,6 @@ export default class IrisRtcEngine {
 
   private _createClient() {
     if (this._client !== undefined) return;
-    console.log('DELDEL _createClient');
     this._config.codec = 'vp8';
     this._config.audioCodec = 'opus';
     this._client = AgoraRTC.createClient(this._config);
@@ -1040,12 +1041,14 @@ export default class IrisRtcEngine {
     if (this._client === undefined) {
       throw 'please create first';
     }
+
     const muteRemoteAudioStream = async (
       user: IAgoraRTCRemoteUser
     ): Promise<void> => {
       if (this._client === undefined) {
         throw 'please create first';
       }
+
       if (!params.mute) {
         return this._client.subscribe(user, 'audio').then((track) => {
           track.on('first-frame-decoded', () => {
@@ -1076,6 +1079,12 @@ export default class IrisRtcEngine {
         })
       );
     } else {
+      // 화면 공유 uid(10)일 경우
+      // local audio stream mute를 다시 unmute 시켜주는 버그가 있어
+      // 방어 로직 추가
+      if(params.userId.uid === this.SCREEN_UID) {
+        return;
+      }
       return muteRemoteAudioStream(params.userId);
     }
   }
@@ -1160,6 +1169,12 @@ export default class IrisRtcEngine {
         })
       );
     } else {
+      // 화면 공유 uid(10)일 경우
+      // local video stream mute를 다시 unmute 시켜주는 버그가 있어
+      // 방어 로직 추가
+      if(params.userId.uid === this.SCREEN_UID) {
+        return;
+      }
       return muteRemoteVideoStream(params.userId);
     }
   }
