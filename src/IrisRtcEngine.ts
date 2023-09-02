@@ -1169,12 +1169,6 @@ export default class IrisRtcEngine {
         })
       );
     } else {
-      // 화면 공유 uid(10)일 경우
-      // local video stream mute를 다시 unmute 시켜주는 버그가 있어
-      // 방어 로직 추가
-      if(params.userId.uid === this.SCREEN_UID) {
-        return;
-      }
       return muteRemoteVideoStream(params.userId);
     }
   }
